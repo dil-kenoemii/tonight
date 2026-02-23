@@ -8,7 +8,7 @@ async function migrate() {
 
     console.log('Creating tables...');
 
-    // Create rooms table
+    // Create rooms table (without fk_winner constraint - will be added after options table is created)
     await client.query(`
       CREATE TABLE IF NOT EXISTS rooms (
         id SERIAL PRIMARY KEY,
@@ -16,8 +16,7 @@ async function migrate() {
         category VARCHAR(10) NOT NULL CHECK (category IN ('eat', 'watch', 'do')),
         status VARCHAR(20) NOT NULL DEFAULT 'gathering' CHECK (status IN ('gathering', 'decided')),
         winner_option_id INTEGER,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-        CONSTRAINT fk_winner FOREIGN KEY (winner_option_id) REFERENCES options(id) ON DELETE SET NULL
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
       )
     `);
 
