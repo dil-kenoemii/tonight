@@ -79,6 +79,11 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
   const currentParticipant = roomState.participants.find(p => p.id === participantId);
   const isHost = currentParticipant?.is_host || false;
 
+  // Count current participant's options
+  const currentParticipantOptionCount = roomState.options.filter(
+    option => option.participant_id === participantId
+  ).length;
+
   // Get full URL for sharing
   const shareUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/room/${roomCode}`
@@ -86,6 +91,15 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
 
   const handleCopyLink = () => {
     copyToClipboard(shareUrl);
+  };
+
+  const handleOptionAdded = () => {
+    // Option added, polling will update the state automatically
+    // We could implement optimistic UI here, but polling is sufficient
+  };
+
+  const handleVetoComplete = () => {
+    // Veto completed, polling will update the state automatically
   };
 
   return (
@@ -123,22 +137,54 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
         {/* Options Section */}
         <div className="bg-white rounded-lg shadow-xl p-8 mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Options</h2>
-          <OptionsList options={roomState.options} />
-          <AddOptionForm roomCode={roomCode} participantId={participantId} />
+          <OptionsList
+            options={roomState.options}
+            participants={roomState.participants}
+            currentParticipantId={participantId}
+            roomCode={roomCode}
+            onVetoComplete={handleVetoComplete}
+          />
+          <AddOptionForm
+            roomCode={roomCode}
+            participantId={participantId}
+            currentOptionCount={currentParticipantOptionCount}
+            onOptionAdded={handleOptionAdded}
+          />
         </div>
 
         {/* Host Controls */}
         {isHost && (
           <div className="bg-white rounded-lg shadow-xl p-6">
-            <button
-              disabled
-              className="w-full h-14 bg-gradient-to-r from-purple-400 to-pink-500 text-white font-bold text-xl rounded-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              🎡 Lock & Spin!
-            </button>
-            <p className="text-center text-sm text-gray-500 mt-2">
-              Add at least 2 options to spin
-            </p>
+            {(() => {
+              const nonVetoedOptions = roomState.options.filter(opt => !opt.is_vetoed);
+              const totalOptions = roomState.options.length;
+              const canSpin = nonVetoedOptions.length >= 2;
+
+              let message = '';
+              if (totalOptions === 0) {
+                message = 'Add at least 2 options to spin';
+              } else if (nonVetoedOptions.length === 0) {
+                message = 'All options have been vetoed! Add more options.';
+              } else if (nonVetoedOptions.length === 1) {
+                message = 'Need at least 2 non-vetoed options to spin';
+              } else {
+                message = `Ready to spin with ${nonVetoedOptions.length} options!`;
+              }
+
+              return (
+                <>
+                  <button
+                    disabled={!canSpin}
+                    className="w-full h-14 bg-gradient-to-r from-purple-400 to-pink-500 text-white font-bold text-xl rounded-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    🎡 Lock & Spin!
+                  </button>
+                  <p className="text-center text-sm text-gray-500 mt-2">
+                    {message}
+                  </p>
+                </>
+              );
+            })()}
           </div>
         )}
       </div>

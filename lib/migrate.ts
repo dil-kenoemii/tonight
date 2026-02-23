@@ -1,4 +1,17 @@
-import pool from './db';
+import { config } from 'dotenv';
+import { Pool } from 'pg';
+
+// Load environment variables from .env.local
+config({ path: '.env.local' });
+
+// Create pool directly here to ensure env vars are loaded
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
+  ssl: { rejectUnauthorized: false },
+});
 
 async function migrate() {
   const client = await pool.connect();
