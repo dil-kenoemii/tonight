@@ -41,6 +41,11 @@ export function isRateLimited(
   identifier: string,
   config: RateLimitConfig
 ): boolean {
+  // Skip rate limiting in development mode
+  if (process.env.NODE_ENV === 'development') {
+    return false;
+  }
+
   const now = Date.now();
   const windowStart = now - config.windowMs;
 

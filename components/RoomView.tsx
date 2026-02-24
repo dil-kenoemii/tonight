@@ -5,6 +5,7 @@ import type { RoomState, Category } from '@/types';
 import ParticipantList from './ParticipantList';
 import OptionsList from './OptionsList';
 import AddOptionForm from './AddOptionForm';
+import SpinWheel from './SpinWheel';
 import useCopyToClipboard from '@/hooks/useCopyToClipboard';
 
 interface RoomViewProps {
@@ -18,9 +19,23 @@ const categoryLabels: Record<Category, string> = {
   do: '🎯 What to Do',
 };
 
+interface SpinResult {
+  winner: {
+    id: number;
+    text: string;
+    participant_id: number;
+    participant_name: string;
+  };
+  winnerIndex: number;
+  totalOptions: number;
+  allOptions: any[];
+}
+
 export default function RoomView({ roomCode, participantId }: RoomViewProps) {
   const [roomState, setRoomState] = useState<RoomState | null>(null);
   const [error, setError] = useState('');
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [spinResult, setSpinResult] = useState<SpinResult | null>(null);
   const { copyToClipboard, copied } = useCopyToClipboard();
 
   // Polling for room updates
@@ -50,6 +65,37 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
     // Cleanup on unmount
     return () => clearInterval(interval);
   }, [roomCode]);
+
+  // Check if room status changed to 'decided' (for participants)
+  useEffect(() => {
+    if (roomState?.room.status === 'decided' && !spinResult && !isSpinning) {
+      // Participant detected spin via polling - fetch winner info
+      const fetchWinner = async () => {
+        const nonVetoedOptions = roomState.options.filter(opt => !opt.is_vetoed);
+        const winner = roomState.options.find(opt => opt.id === roomState.room.winner_option_id);
+
+        if (winner) {
+          const winnerParticipant = roomState.participants.find(p => p.id === winner.participant_id);
+          const winnerIndex = nonVetoedOptions.findIndex(opt => opt.id === winner.id);
+
+          setSpinResult({
+            winner: {
+              id: winner.id,
+              text: winner.text,
+              participant_id: winner.participant_id,
+              participant_name: winnerParticipant?.name || 'Unknown',
+            },
+            winnerIndex: winnerIndex >= 0 ? winnerIndex : 0,
+            totalOptions: nonVetoedOptions.length,
+            allOptions: nonVetoedOptions,
+          });
+          setIsSpinning(true);
+        }
+      };
+
+      fetchWinner();
+    }
+  }, [roomState, spinResult, isSpinning]);
 
   if (error) {
     return (
@@ -102,6 +148,50 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
     // Veto completed, polling will update the state automatically
   };
 
+  const handleSpin = async () => {
+    setIsSpinning(true);
+    setError('');
+
+    try {
+      const response = await fetch(`/api/rooms/${roomCode}/spin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Failed to spin wheel');
+        setIsSpinning(false);
+        return;
+      }
+
+      // Store spin result and show wheel immediately for host
+      setSpinResult(data);
+    } catch (err) {
+      setError('Network error. Please try again.');
+      setIsSpinning(false);
+    }
+  };
+
+  // Show spin wheel if spinning or room is decided
+  if (spinResult && roomState) {
+    const nonVetoedOptions = roomState.options.filter(opt => !opt.is_vetoed);
+
+    return (
+      <SpinWheel
+        options={nonVetoedOptions}
+        winnerIndex={spinResult.winnerIndex}
+        winnerText={spinResult.winner.text}
+        winnerParticipantName={spinResult.winner.participant_name}
+        isHost={isHost}
+      />
+    );
+  }
+
+  // Show room view
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6">
       <div className="max-w-2xl mx-auto">
@@ -174,10 +264,11 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
               return (
                 <>
                   <button
-                    disabled={!canSpin}
+                    onClick={handleSpin}
+                    disabled={!canSpin || isSpinning}
                     className="w-full h-14 bg-gradient-to-r from-purple-400 to-pink-500 text-white font-bold text-xl rounded-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    🎡 Lock & Spin!
+                    {isSpinning ? '🎡 Spinning...' : '🎡 Lock & Spin!'}
                   </button>
                   <p className="text-center text-sm text-gray-500 mt-2">
                     {message}
