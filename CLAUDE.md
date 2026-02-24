@@ -18,7 +18,20 @@ The user is a product manager learning to vibe code with no prior coding experie
 - **Run migrations:** `npx tsx lib/migrate.ts` (creates database tables)
 - **Cleanup job:** `npx tsx lib/cleanup.ts` (deletes old rooms and expired sessions)
 - **Clear build cache:** `rm -rf .next` (fixes webpack module errors)
+- **Lint:** `npm run lint` (run ESLint)
 - **No test runner configured** — manual testing only (see PRD Testing Checklist)
+
+## Git Workflow
+
+This project uses a **feature branch workflow** to keep `main` stable and deployable:
+
+1. **Start new work:** Create a feature branch (e.g., `feature/milestone-7-railway`)
+2. **Develop on branch:** Make changes, commit, push to feature branch
+3. **Test thoroughly:** Build and test all features before merging
+4. **Merge to main:** Only merge working code to `main`
+5. **Clean up:** Delete feature branch after merging
+
+See `WORKFLOW.md` for detailed commands and branch naming conventions. Key principle: **main should always be in a working, deployable state**.
 
 ## Project Overview
 
@@ -94,12 +107,35 @@ All routes in `app/api/`:
 - Displays cards with category emoji, winner text (truncated 50 chars), participant count, relative time
 - Uses `date-fns` for time formatting
 
+### Custom Hooks
+
+**useCopyToClipboard** (`hooks/useCopyToClipboard.ts`):
+- Copies text to clipboard using `navigator.clipboard.writeText()`
+- Returns `[copied, copyToClipboard]` tuple
+- `copied` boolean resets to false after 2 seconds
+- Use for room code sharing buttons
+
+### TypeScript Types
+
+All shared types in `types/index.ts`:
+- `Room`, `Participant`, `Option` - database entity types
+- `RoomState` - full room state returned by GET `/api/rooms/[code]`
+- `Category` - union type: `'eat' | 'watch' | 'do'`
+
 ### Real-time Updates
 
 **Polling strategy:** Client polls `GET /api/rooms/[code]` every 2000ms.
 - Implemented with `useEffect` + `setInterval` in room page client component
 - Host immediately shows wheel after clicking Spin (doesn't wait for poll)
 - Participants detect `status = 'decided'` via next poll (0-2s delay)
+
+### Middleware & CORS
+
+`middleware.ts` handles CORS for all API routes:
+- Sets `Access-Control-Allow-Origin` to `NEXT_PUBLIC_APP_URL`
+- Enables credentials (cookies) for cross-origin requests
+- Handles OPTIONS preflight requests
+- Only applies to `/api/*` routes (configured via matcher)
 
 ### Security Requirements
 
@@ -203,6 +239,7 @@ This tracking helps maintain project progress visibility and provides context fo
   - "What to Watch": `bg-gradient-to-r from-purple-400 to-pink-500`
   - "What to Do": `bg-gradient-to-r from-green-400 to-teal-500`
 - **No horizontal scroll:** Use `overflow-x-hidden` globally
+- **Custom animations:** Tailwind configured with `fadeIn` animation (0.3s ease-out, opacity + scale). Use with `animate-fadeIn` class.
 
 ## Explicit Non-Goals
 
@@ -220,6 +257,25 @@ DO NOT build:
 - Unit/E2E tests
 - i18n (English only)
 - Host migration
+
+## Deployment
+
+**Target platform:** Railway (https://railway.app)
+
+**Requirements:**
+- PostgreSQL 15+ database (Railway Postgres plugin)
+- Node.js 18+ runtime
+- Environment variables configured (see below)
+
+**Deployment process:**
+1. Connect GitHub repository to Railway
+2. Add PostgreSQL plugin (sets `DATABASE_URL` automatically)
+3. Configure environment variables
+4. Railway auto-detects Next.js and builds with `npm run build`
+5. Starts with `npm start`
+6. Run migrations: `npx tsx lib/migrate.ts` (one-time setup)
+
+**Health check:** Railway can ping `/api/health` to verify deployment
 
 ## Environment Variables
 
@@ -261,6 +317,58 @@ For production (Railway), same variables but:
 - Use `Map.forEach()` instead of `for...of` with `Map.entries()`
 - Example: `store.forEach((record, key) => { ... })` instead of `for (const [key, record] of store.entries())`
 
+**Database connection errors:**
+- Verify `DATABASE_URL` in `.env.local` is correct
+- Test connection with `npx tsx lib/migrate.ts`
+- For Railway: ensure PostgreSQL plugin is added and `DATABASE_URL` is set
+
+**Untracked test files:**
+- Files like `test-*.js`, `migration.sql` are temporary debugging files
+- Safe to delete or add to `.gitignore` if cluttering workspace
+- Not part of production application
+
+## Project File Structure
+
+```
+spindecide/
+├── app/                      # Next.js App Router
+│   ├── api/                  # API routes (Next.js Route Handlers)
+│   │   ├── health/           # Health check endpoint
+│   │   ├── recent/           # Recent decisions endpoint
+│   │   └── rooms/            # Room management endpoints
+│   ├── room/[code]/          # Dynamic room page
+│   ├── layout.tsx            # Root layout (Poppins font, global styles)
+│   ├── page.tsx              # Homepage (category buttons + recent decisions)
+│   └── globals.css           # Global Tailwind styles
+├── components/               # React components
+│   ├── AddOptionForm.tsx     # Option submission form with optimistic UI
+│   ├── CreateRoomModal.tsx   # Modal for creating new room
+│   ├── JoinForm.tsx          # Room joining form
+│   ├── OptionsList.tsx       # Display all options (with veto buttons)
+│   ├── ParticipantList.tsx   # Display all participants
+│   ├── RecentDecisions.tsx   # Homepage recent decisions list
+│   ├── ResultView.tsx        # Read-only view for late joiners
+│   ├── RoomView.tsx          # Main room interface
+│   ├── SpinWheel.tsx         # Animated spinning wheel
+│   └── VetoConfirmationModal.tsx # Veto confirmation dialog
+├── hooks/                    # Custom React hooks
+│   └── useCopyToClipboard.ts # Copy to clipboard utility
+├── lib/                      # Backend utilities
+│   ├── cleanup.ts            # Cron job: delete old rooms/sessions
+│   ├── db.ts                 # PostgreSQL connection pool
+│   ├── generateRoomCode.ts   # 6-character room code generator
+│   ├── migrate.ts            # Database schema creation
+│   ├── rateLimit.ts          # In-memory rate limiting
+│   ├── session.ts            # Session management (create, verify, delete)
+│   └── validation.ts         # Input validation utilities
+├── types/                    # TypeScript type definitions
+│   └── index.ts              # Shared types (Room, Participant, Option, etc.)
+├── middleware.ts             # Next.js middleware (CORS for API routes)
+├── .env.local                # Environment variables (not in git)
+├── WORKFLOW.md               # Feature branch workflow guide
+└── CLAUDE.md                 # This file
+```
+
 ## Reference Documents
 
 All project documentation is located in the parent directory (`../` relative to this project root):
@@ -270,9 +378,11 @@ All project documentation is located in the parent directory (`../` relative to 
 - **../TECHNICAL_SPEC.md** — Implementation-level details: database patterns, query examples, transaction handling, component specs
 - **../PROJECT_STRUCTURE.md** — Full file structure with descriptions of every file/component in the finished project
 - **../CLAUDE.md** — This file (also exists in parent directory)
+- **WORKFLOW.md** — Git feature branch workflow guide (in this directory)
 
 When implementing features, reference these files frequently:
 - Start with MILESTONES.md to understand what to build next
 - Use requirements_1.md for detailed API contracts and user flows
 - Reference TECHNICAL_SPEC.md for code patterns and implementation examples
 - Check PROJECT_STRUCTURE.md to understand where files should be created
+- Follow WORKFLOW.md for Git branching strategy
