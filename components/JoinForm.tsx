@@ -35,7 +35,7 @@ export default function JoinForm({ roomCode }: JoinFormProps) {
         }
 
         setRoomState(data);
-      } catch (err) {
+      } catch {
         setFetchError('Failed to connect to server');
       }
     };
@@ -84,7 +84,7 @@ export default function JoinForm({ roomCode }: JoinFormProps) {
 
       // Success - reload page to show room view
       router.refresh();
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
       setIsLoading(false);
     }
@@ -94,7 +94,7 @@ export default function JoinForm({ roomCode }: JoinFormProps) {
   if (fetchError) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6 flex items-center justify-center">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8">
           <div className="text-center">
             <div className="text-6xl mb-4">❌</div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Error</h2>
@@ -139,7 +139,7 @@ export default function JoinForm({ roomCode }: JoinFormProps) {
         </div>
 
         {/* Join Form */}
-        <div className="bg-white rounded-lg shadow-xl p-8">
+        <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
             Join the Room
           </h2>

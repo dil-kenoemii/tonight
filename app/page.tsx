@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import CreateRoomModal from '@/components/CreateRoomModal';
+import RecentDecisions from '@/components/RecentDecisions';
 import type { Category } from '@/types';
 
 export default function Home() {
@@ -16,10 +17,6 @@ export default function Home() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedCategory(null);
-  };
-
-  const handleSubmit = async (hostName: string) => {
-    // Modal component will handle the API call and redirect
   };
 
   return (
@@ -59,15 +56,8 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Recent Decisions - Placeholder */}
-        <div className="mt-16">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">
-            Recent Decisions
-          </h2>
-          <div className="bg-white rounded-lg shadow-md p-6 text-center text-gray-500">
-            No recent decisions yet
-          </div>
-        </div>
+        {/* Recent Decisions */}
+        <RecentDecisions />
       </div>
 
       {/* Modal */}
@@ -76,7 +66,6 @@ export default function Home() {
           isOpen={isModalOpen}
           category={selectedCategory}
           onClose={handleCloseModal}
-          onSubmit={handleSubmit}
         />
       )}
     </div>

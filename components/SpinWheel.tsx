@@ -13,6 +13,20 @@ interface SpinWheelProps {
   isHost: boolean;
 }
 
+// Wheel colors (constant - moved outside component to avoid React hooks warning)
+const WHEEL_COLORS = [
+  '#FF6B6B', // Red
+  '#4ECDC4', // Teal
+  '#45B7D1', // Blue
+  '#FFA07A', // Light Salmon
+  '#98D8C8', // Mint
+  '#F7DC6F', // Yellow
+  '#BB8FCE', // Purple
+  '#85C1E2', // Light Blue
+  '#F8B739', // Orange
+  '#52B788', // Green
+];
+
 export default function SpinWheel({
   options,
   winnerIndex,
@@ -25,20 +39,6 @@ export default function SpinWheel({
   const [showWinner, setShowWinner] = useState(false);
   const animationStartedRef = useRef(false);
   const router = useRouter();
-
-  // Wheel colors
-  const colors = [
-    '#FF6B6B', // Red
-    '#4ECDC4', // Teal
-    '#45B7D1', // Blue
-    '#FFA07A', // Light Salmon
-    '#98D8C8', // Mint
-    '#F7DC6F', // Yellow
-    '#BB8FCE', // Purple
-    '#85C1E2', // Light Blue
-    '#F8B739', // Orange
-    '#52B788', // Green
-  ];
 
   useEffect(() => {
     // Prevent animation from restarting on re-renders
@@ -85,8 +85,11 @@ export default function SpinWheel({
     const tickInterval = 50; // Tick every 50ms initially
 
     try {
-      audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    } catch (e) {
+      const AudioContextConstructor = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (AudioContextConstructor) {
+        audioContext = new AudioContextConstructor();
+      }
+    } catch {
       console.log('Audio not supported');
     }
 
@@ -124,7 +127,7 @@ export default function SpinWheel({
         ctx.moveTo(centerX, centerY);
         ctx.arc(centerX, centerY, radius, startAngle, endAngle);
         ctx.closePath();
-        ctx.fillStyle = isWinningSegment ? '#FFD700' : colors[i % colors.length]; // Gold for winner
+        ctx.fillStyle = isWinningSegment ? '#FFD700' : WHEEL_COLORS[i % WHEEL_COLORS.length]; // Gold for winner
         ctx.fill();
         ctx.strokeStyle = isWinningSegment ? '#FFD700' : '#ffffff';
         ctx.lineWidth = isWinningSegment ? 5 : 3;

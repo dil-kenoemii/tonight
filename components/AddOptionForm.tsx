@@ -4,14 +4,12 @@ import { useState, useEffect } from 'react';
 
 interface AddOptionFormProps {
   roomCode: string;
-  participantId: number;
   currentOptionCount: number;
   onOptionAdded: () => void;
 }
 
 export default function AddOptionForm({
   roomCode,
-  participantId,
   currentOptionCount,
   onOptionAdded
 }: AddOptionFormProps) {
@@ -88,7 +86,7 @@ export default function AddOptionForm({
       setText('');
       setIsSubmitting(false);
       onOptionAdded();
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
       setIsSubmitting(false);
     }
@@ -110,7 +108,7 @@ export default function AddOptionForm({
           <button
             type="submit"
             disabled={isSubmitting || !text.trim()}
-            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200"
+            className="px-6 h-11 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200"
           >
             {isSubmitting ? 'Adding...' : 'Add'}
           </button>

@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { RoomState, Category } from '@/types';
+import type { RoomState, Category, Option } from '@/types';
 import ParticipantList from './ParticipantList';
 import OptionsList from './OptionsList';
 import AddOptionForm from './AddOptionForm';
 import SpinWheel from './SpinWheel';
+import ResultView from './ResultView';
 import useCopyToClipboard from '@/hooks/useCopyToClipboard';
 
 interface RoomViewProps {
@@ -28,7 +29,7 @@ interface SpinResult {
   };
   winnerIndex: number;
   totalOptions: number;
-  allOptions: any[];
+  allOptions: Option[];
 }
 
 export default function RoomView({ roomCode, participantId }: RoomViewProps) {
@@ -51,7 +52,7 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
         } else {
           setError(data.error || 'Failed to load room');
         }
-      } catch (err) {
+      } catch {
         setError('Failed to connect to server');
       }
     };
@@ -100,7 +101,7 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6 flex items-center justify-center">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8">
           <div className="text-center">
             <div className="text-6xl mb-4">❌</div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Error</h2>
@@ -124,6 +125,12 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
 
   const currentParticipant = roomState.participants.find(p => p.id === participantId);
   const isHost = currentParticipant?.is_host || false;
+
+  // Check if this is a late joiner (joined after room was decided)
+  // Late joiners see the read-only result view instead of interactive UI
+  if (roomState.room.status === 'decided' && !spinResult && !isSpinning) {
+    return <ResultView roomCode={roomCode} roomState={roomState} />;
+  }
 
   // Count current participant's options
   const currentParticipantOptionCount = roomState.options.filter(
@@ -170,7 +177,7 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
 
       // Store spin result and show wheel immediately for host
       setSpinResult(data);
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
       setIsSpinning(false);
     }
@@ -196,9 +203,9 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6">
       <div className="max-w-2xl mx-auto">
         {/* Room Header */}
-        <div className="bg-white rounded-lg shadow-xl p-8 mb-6">
+        <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8 mb-6">
           <div className="text-center mb-6">
-            <div className="font-mono text-5xl tracking-widest font-bold text-gray-900 mb-3">
+            <div className="font-mono text-4xl sm:text-5xl tracking-widest font-bold text-gray-900 mb-3">
               {roomCode}
             </div>
             <div className="text-2xl text-gray-700 mb-4">
@@ -213,7 +220,7 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
               </div>
               <button
                 onClick={handleCopyLink}
-                className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                className="px-6 h-11 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200"
               >
                 {copied ? 'Copied ✓' : 'Copy Link'}
               </button>
@@ -225,7 +232,7 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
         </div>
 
         {/* Options Section */}
-        <div className="bg-white rounded-lg shadow-xl p-8 mb-6">
+        <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8 mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Options</h2>
           <OptionsList
             options={roomState.options}
@@ -236,7 +243,6 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
           />
           <AddOptionForm
             roomCode={roomCode}
-            participantId={participantId}
             currentOptionCount={currentParticipantOptionCount}
             onOptionAdded={handleOptionAdded}
           />

@@ -8,7 +8,6 @@ interface CreateRoomModalProps {
   isOpen: boolean;
   category: Category;
   onClose: () => void;
-  onSubmit: (hostName: string) => void;
 }
 
 const categoryLabels: Record<Category, string> = {
@@ -21,7 +20,6 @@ export default function CreateRoomModal({
   isOpen,
   category,
   onClose,
-  onSubmit,
 }: CreateRoomModalProps) {
   const [hostName, setHostName] = useState('');
   const [error, setError] = useState('');
@@ -69,7 +67,7 @@ export default function CreateRoomModal({
 
       // Success - redirect to room page
       router.push(`/room/${data.code}`);
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
       setIsLoading(false);
     }

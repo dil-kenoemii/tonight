@@ -21,7 +21,6 @@ export default function OptionsList({
 }: OptionsListProps) {
   const [vetoModalOpen, setVetoModalOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState<Option | null>(null);
-  const [isVetoing, setIsVetoing] = useState(false);
   const [error, setError] = useState('');
 
   if (options.length === 0) {
@@ -50,7 +49,6 @@ export default function OptionsList({
   const handleVetoConfirm = async () => {
     if (!selectedOption) return;
 
-    setIsVetoing(true);
     setError('');
 
     try {
@@ -76,19 +74,16 @@ export default function OptionsList({
         } else {
           setError(data.error || 'Failed to veto option');
         }
-        setIsVetoing(false);
         setVetoModalOpen(false);
         return;
       }
 
       // Success
-      setIsVetoing(false);
       setVetoModalOpen(false);
       setSelectedOption(null);
       onVetoComplete();
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
-      setIsVetoing(false);
       setVetoModalOpen(false);
     }
   };
@@ -140,7 +135,7 @@ export default function OptionsList({
                 {canVeto && (
                   <button
                     onClick={() => handleVetoClick(option)}
-                    className="flex-shrink-0 w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-full flex items-center justify-center transition-colors duration-200"
+                    className="flex-shrink-0 min-w-[44px] min-h-[44px] bg-red-100 hover:bg-red-200 text-red-600 rounded-full flex items-center justify-center transition-colors duration-200"
                     title="Veto this option"
                   >
                     ❌

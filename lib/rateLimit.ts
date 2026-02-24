@@ -15,7 +15,7 @@ setInterval(() => {
   const now = Date.now();
   const fiveMinutesAgo = now - 5 * 60 * 1000;
 
-  for (const [key, record] of store.entries()) {
+  store.forEach((record, key) => {
     // Remove timestamps older than 5 minutes
     record.timestamps = record.timestamps.filter(t => t > fiveMinutesAgo);
 
@@ -23,7 +23,7 @@ setInterval(() => {
     if (record.timestamps.length === 0) {
       store.delete(key);
     }
-  }
+  });
 }, 5 * 60 * 1000);
 
 export interface RateLimitConfig {

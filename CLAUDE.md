@@ -17,6 +17,7 @@ The user is a product manager learning to vibe code with no prior coding experie
 - **Start:** `npm start` (production server)
 - **Run migrations:** `npx tsx lib/migrate.ts` (creates database tables)
 - **Cleanup job:** `npx tsx lib/cleanup.ts` (deletes old rooms and expired sessions)
+- **Clear build cache:** `rm -rf .next` (fixes webpack module errors)
 - **No test runner configured** — manual testing only (see PRD Testing Checklist)
 
 ## Project Overview
@@ -65,6 +66,7 @@ All routes in `app/api/`:
 - `POST /api/rooms/[code]/options` — submit option (max 3 per participant)
 - `POST /api/rooms/[code]/options/[optionId]/veto` — veto option (one per participant)
 - `POST /api/rooms/[code]/spin` — host only, picks winner, sets status to 'decided'
+- `GET /api/recent` — returns last 10 decided rooms with winner info (for homepage)
 - `GET /api/health` — health check for Railway
 
 **Error format:** All errors return `{ error: "message", code: "ERROR_CODE" }` with appropriate HTTP status.
@@ -73,6 +75,24 @@ All routes in `app/api/`:
 
 - `/` — Homepage with 3 category buttons + Recent Decisions list
 - `/room/[code]` — Shows join form (no session) OR room view (active session) OR result view (if status='decided')
+
+### Component Structure
+
+**RoomView** (main room interface):
+- Shows interactive UI (add options, veto, spin) for active participants
+- Switches to SpinWheel component when spinning
+- Shows ResultView for late joiners (users who join after status='decided')
+
+**ResultView** (read-only result display):
+- Shown to users who join after the room has decided
+- Displays winner, participants list (read-only), all options with vetoed strikethrough
+- "🎲 New Round" button navigates to homepage
+- Prevents late joiners from seeing interactive UI
+
+**RecentDecisions** (homepage):
+- Fetches from `/api/recent` on mount
+- Displays cards with category emoji, winner text (truncated 50 chars), participant count, relative time
+- Uses `date-fns` for time formatting
 
 ### Real-time Updates
 
@@ -173,9 +193,11 @@ This tracking helps maintain project progress visibility and provides context fo
 ## Design Constraints
 
 - **Mobile-first:** Base styles for 375px width (iPhone SE)
-- **Touch targets:** All interactive elements ≥ 44px tall
+- **Touch targets:** All interactive elements ≥ 44px tall (use `h-11` for buttons)
+- **Responsive padding:** Use `p-4 sm:p-6 md:p-8` pattern (16px mobile → 24px tablet → 32px desktop)
+- **Responsive text:** Room code uses `text-4xl sm:text-5xl` to prevent overflow on small screens
 - **Font:** Poppins (weights: 400, 600, 700, 800) loaded from Google Fonts
-- **Room code display:** Monospace, 48px+, wide letter-spacing (`font-mono text-5xl tracking-widest`)
+- **Room code display:** Monospace, wide letter-spacing (`font-mono tracking-widest`)
 - **Category gradients:**
   - "Where to Eat": `bg-gradient-to-r from-orange-400 to-red-500`
   - "What to Watch": `bg-gradient-to-r from-purple-400 to-pink-500`
@@ -222,6 +244,22 @@ For production (Railway), same variables but:
 - **Vetoed options excluded:** Always filter `is_vetoed = false` when querying for spin
 - **No host migration:** If host leaves, room becomes orphaned (participants can't spin)
 - **24-hour cleanup:** Rooms auto-delete after 24 hours via cron job
+- **Late joiner detection:** Check `status='decided' && !spinResult && !isSpinning` to show ResultView
+
+## Troubleshooting
+
+**"Cannot find module" or webpack errors:**
+- Run `rm -rf .next` to clear build cache, then restart dev server
+- This happens when Next.js build cache gets corrupted after file changes
+
+**ESLint errors in build:**
+- Unused catch variables: Use `catch` instead of `catch (err)` if error isn't used
+- Unused props: Remove from interface if not needed in component
+- `any` types: Replace with proper types (e.g., `Option[]` instead of `any[]`)
+
+**TypeScript Map iteration errors:**
+- Use `Map.forEach()` instead of `for...of` with `Map.entries()`
+- Example: `store.forEach((record, key) => { ... })` instead of `for (const [key, record] of store.entries())`
 
 ## Reference Documents
 
