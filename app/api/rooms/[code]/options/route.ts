@@ -105,10 +105,10 @@ export async function POST(
 
       const optionCount = parseInt(countResult.rows[0].count);
 
-      if (optionCount >= 3) {
+      if (optionCount >= 5) {
         await client.query('ROLLBACK');
         return NextResponse.json(
-          { error: 'You have already added 3 options', code: 'OPTION_LIMIT_REACHED' },
+          { error: 'You have already added 5 options', code: 'OPTION_LIMIT_REACHED' },
           { status: 400 }
         );
       }

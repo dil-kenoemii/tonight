@@ -13,7 +13,7 @@ Can't decide where to eat, what to watch, or what to do? Create a room, invite f
 - **🎯 Real-time multiplayer** — Everyone sees updates instantly via polling
 - **🎡 Spinning wheel** — Animated canvas wheel with confetti celebration
 - **👥 Unlimited participants** — Share a link, no accounts needed
-- **✏️ Submit options** — Up to 3 suggestions per person
+- **✏️ Submit options** — Up to 5 suggestions per person
 - **❌ Veto power** — Each person can veto one option they really don't want
 - **📱 Mobile-friendly** — Responsive design works on any device
 - **🔒 Secure sessions** — HTTP-only cookies with cryptographic session tokens

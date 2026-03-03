@@ -54,7 +54,7 @@ Four tables: `rooms`, `sessions`, `participants`, `options`
 - Room has many participants (host is first participant with `is_host = true`)
 - Room has many options
 - Room has `winner_option_id` (nullable FK to options)
-- Participant has many options (max 3 per participant)
+- Participant has many options (max 5 per participant)
 - Participant can veto exactly one option (`has_vetoed` boolean)
 - Session links to participant (1:1 for 24 hours)
 
@@ -76,7 +76,7 @@ All routes in `app/api/`:
 - `POST /api/rooms` — create room + host participant, set cookie, return room code
 - `GET /api/rooms/[code]` — public endpoint, returns full room state (participants + options)
 - `POST /api/rooms/[code]/join` — join room, set cookie
-- `POST /api/rooms/[code]/options` — submit option (max 3 per participant)
+- `POST /api/rooms/[code]/options` — submit option (max 5 per participant)
 - `POST /api/rooms/[code]/options/[optionId]/veto` — veto option (one per participant)
 - `POST /api/rooms/[code]/spin` — host only, picks winner, sets status to 'decided'
 - `GET /api/recent` — returns last 10 decided rooms with winner info (for homepage)

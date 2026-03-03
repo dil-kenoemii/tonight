@@ -27,12 +27,12 @@ export default function AddOptionForm({
     }
   }, [error]);
 
-  // If user has 3 options, show confirmation message
-  if (currentOptionCount >= 3) {
+  // If user has 5 options, show confirmation message
+  if (currentOptionCount >= 5) {
     return (
       <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg text-center">
         <span className="text-green-700 font-semibold">
-          You&apos;ve added your 3 options ✓
+          You&apos;ve added your 5 options ✓
         </span>
       </div>
     );
@@ -70,7 +70,7 @@ export default function AddOptionForm({
 
       if (!response.ok) {
         if (data.code === 'OPTION_LIMIT_REACHED') {
-          setError('You have already added 3 options');
+          setError('You have already added 5 options');
         } else if (data.code === 'ROOM_LOCKED') {
           setError('Room is no longer accepting options');
         } else if (response.status === 429) {
@@ -124,7 +124,7 @@ export default function AddOptionForm({
 
       {/* Helper text */}
       <p className="text-sm text-gray-500 mt-2">
-        {currentOptionCount} of 3 options added
+        {currentOptionCount} of 5 options added
       </p>
     </div>
   );
