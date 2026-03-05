@@ -23,6 +23,22 @@ export interface Participant {
   created_at: Date;
 }
 
+// AI metadata attached to AI-generated options
+export interface AiMetadata {
+  reasoning: string;
+  confidence: number;
+}
+
+// Quiz responses keyed by question identifier
+export type QuizResponses = { [key: string]: string };
+
+// A single AI suggestion returned by the Claude API
+export interface AiSuggestion {
+  text: string;
+  reasoning: string;
+  confidence: number;
+}
+
 // Option interface matching database schema
 export interface Option {
   id: number;
@@ -31,6 +47,8 @@ export interface Option {
   text: string;
   is_vetoed: boolean;
   vetoed_by_id: number | null;
+  source: 'user' | 'ai';
+  ai_metadata: AiMetadata | null;
   created_at: Date;
 }
 

@@ -77,4 +77,6 @@ export const RATE_LIMITS = {
   JOIN_ROOM: { maxRequests: 10, windowMs: 60 * 1000 }, // 10 requests per minute
   SUBMIT_OPTION: { maxRequests: 20, windowMs: 60 * 1000 }, // 20 requests per minute
   SPIN: { maxRequests: 5, windowMs: 60 * 1000 }, // 5 requests per minute
+  SUBMIT_QUIZ: { maxRequests: 5, windowMs: 60 * 1000 }, // 5 requests per minute
+  AI_SUGGESTIONS: { maxRequests: 5, windowMs: 60 * 1000 }, // 5 requests per minute
 } as const;
