@@ -52,30 +52,21 @@ export async function generateSuggestions(
     ? '- Suggest real activities, attractions, or venues that exist in Budapest'
     : '- Suggest real movie titles or shows (location not applicable for watching content)';
 
-  // For movies, add current date context and theatrical release guidance
+  // For movies, add current date context
   const currentDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const watchContext = category === 'watch' ? `Current Date: ${currentDate}\n` : '';
 
-  // Special instructions for theatrical releases
-  // Note: Claude's knowledge cutoff may be before the current date, so it will make educated
-  // guesses about current theatrical releases based on typical release patterns and seasons
+  // Platform-specific guidance for streaming services
   const platform = quizResponses.platform as string;
-  const isTheaterSelected = platform === 'Theater';
-  const theaterGuidance = isTheaterSelected
-    ? `\nIMPORTANT: User selected "Theater" - suggest movies that are likely playing in theaters RIGHT NOW (${currentDate}).
-- Focus on recent major releases (within last 1-3 months)
-- Include big-budget films, blockbusters, and wide releases that would be in Budapest cinemas
-- Consider the current season (what types of movies typically release in this period)
-- Avoid older films or streaming-exclusive content
-- If unsure about exact current releases, suggest popular recent releases that match their genre preferences
-- Prioritize well-known franchises, sequels, and major studio releases`
+  const platformGuidance = category === 'watch' && platform && platform !== 'Any streaming' && platform !== 'Don\'t care'
+    ? `\nNote: User prefers ${platform}. Suggest content that would be available on this platform.`
     : '';
 
   const prompt = `You are helping a group in Budapest, Hungary decide ${CATEGORY_LABELS[category]}.
 
 ${locationContext}${watchContext}User preferences from quiz:
 ${JSON.stringify(quizResponses, null, 2)}
-${theaterGuidance}
+${platformGuidance}
 
 Generate exactly 5 specific, realistic suggestions that match their stated preferences.
 
@@ -97,12 +88,12 @@ Example output for restaurants in Budapest:
   }
 ]
 
-Example output for movies in theater:
+Example output for movies/shows:
 [
   {
-    "text": "Dune: Part Two",
-    "reasoning": "Epic sci-fi currently in theaters, matches action preference",
-    "confidence": 0.95
+    "text": "The Bear",
+    "reasoning": "Acclaimed comedy-drama series, great for group watching",
+    "confidence": 0.9
   }
 ]
 

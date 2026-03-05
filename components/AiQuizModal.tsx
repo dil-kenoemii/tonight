@@ -26,7 +26,7 @@ const QUESTIONS: Record<Category, Question[]> = {
     { id: 'genre', label: 'What genre are you in the mood for?', options: ['Comedy', 'Action / Thriller', 'Drama / Romance', 'Sci-fi / Horror'] },
     { id: 'mood', label: 'What\'s the group mood?', options: ['Light & fun', 'Edge-of-seat intense', 'Thought-provoking', 'Nostalgic / classic'] },
     { id: 'length', label: 'How long do you want to watch?', options: ['Short (< 90 min)', 'Standard (90–120 min)', 'Epic (2+ hours)', 'TV series episode'] },
-    { id: 'platform', label: 'Where are you watching?', options: ['Netflix', 'Theater', 'Any streaming', 'Don\'t care'] },
+    { id: 'platform', label: 'Where are you watching?', options: ['Netflix', 'Disney+', 'HBO Max', 'Any streaming', 'Don\'t care'] },
     { id: 'group-size', label: 'Who\'s watching?', options: ['Solo', 'Couple', 'Small group (3–5)', 'Big group (6+)'] },
   ],
   do: [
