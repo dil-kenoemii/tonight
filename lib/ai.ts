@@ -37,25 +37,42 @@ export async function generateSuggestions(
 ): Promise<AiSuggestion[]> {
   const client = getClient();
 
-  const prompt = `You are helping a group decide ${CATEGORY_LABELS[category]}.
+  // Build location-aware prompt based on category
+  const locationContext = category === 'eat' || category === 'do'
+    ? 'Location: Budapest, Hungary\nCurrency: HUF (Hungarian Forint)\n'
+    : '';
 
-User preferences from quiz:
+  const budgetContext = category === 'eat' || category === 'do'
+    ? 'Budget is in HUF. Typical ranges: Budget ~2000-4000 HUF, Mid-range ~5000-10000 HUF, High-end 10000+ HUF.'
+    : 'Budget context applies to the user\'s stated preferences.';
+
+  const locationRequirement = category === 'eat'
+    ? '- Suggest real restaurants, cafés, or food spots that exist in Budapest'
+    : category === 'do'
+    ? '- Suggest real activities, attractions, or venues that exist in Budapest'
+    : '- Suggest real movie titles or shows (location not applicable for watching content)';
+
+  const prompt = `You are helping a group in Budapest, Hungary decide ${CATEGORY_LABELS[category]}.
+
+${locationContext}User preferences from quiz:
 ${JSON.stringify(quizResponses, null, 2)}
 
 Generate exactly 3 specific, realistic suggestions that match their stated preferences.
 
 Requirements:
 - Be specific: Real place names, movie titles, activity names (not generic)
+${locationRequirement}
 - Match their budget, cuisine/genre, style, dietary needs, and adventure level
+- ${budgetContext}
 - Provide variety while staying within their constraints
 - Keep each suggestion under 50 characters
 - Format as JSON array with: text, reasoning (one sentence), confidence (0.0-1.0)
 
-Example output:
+Example output for restaurants in Budapest:
 [
   {
-    "text": "Chipotle Mexican Grill",
-    "reasoning": "Fast casual Mexican within budget",
+    "text": "Bors GasztroBar",
+    "reasoning": "Budget-friendly Hungarian soup bar in the Jewish Quarter",
     "confidence": 0.9
   }
 ]

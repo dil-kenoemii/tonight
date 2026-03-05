@@ -17,11 +17,11 @@ interface Question {
 
 const QUESTIONS: Record<Category, Question[]> = {
   eat: [
-    { id: 'budget', label: 'What\'s your budget?', options: ['$ Cheap', '$$ Moderate', '$$$ Upscale', '$$$$ Splurge'] },
-    { id: 'cuisine', label: 'What cuisine sounds good?', options: ['American', 'Asian', 'Italian / Mexican', 'Surprise me'] },
-    { id: 'vibe', label: 'What vibe are you feeling?', options: ['Quick & casual', 'Sit-down dinner', 'Trendy / hip', 'Cozy & chill'] },
+    { id: 'budget', label: 'What\'s your budget?', options: ['Budget (~2000 Ft)', 'Mid-range (~5000 Ft)', 'Upscale (~10000 Ft)', 'Fine dining (15000+ Ft)'] },
+    { id: 'cuisine', label: 'What cuisine sounds good?', options: ['Hungarian', 'International', 'Asian / Middle Eastern', 'Surprise me'] },
+    { id: 'vibe', label: 'What vibe are you feeling?', options: ['Quick & casual', 'Sit-down dinner', 'Trendy / hip', 'Cozy & traditional'] },
     { id: 'dietary', label: 'Any dietary needs?', options: ['No restrictions', 'Vegetarian-friendly', 'Gluten-free options', 'Healthy / light'] },
-    { id: 'distance', label: 'How far will you go?', options: ['Walking distance', 'Short drive', 'Worth the trip', 'Anywhere'] },
+    { id: 'distance', label: 'How far will you go?', options: ['Walking distance', 'Within Budapest', 'Worth the trip', 'Anywhere in the city'] },
   ],
   watch: [
     { id: 'genre', label: 'What genre are you in the mood for?', options: ['Comedy', 'Action / Thriller', 'Drama / Romance', 'Sci-fi / Horror'] },
@@ -31,7 +31,7 @@ const QUESTIONS: Record<Category, Question[]> = {
     { id: 'group-size', label: 'Who\'s watching?', options: ['Solo', 'Couple', 'Small group (3–5)', 'Big group (6+)'] },
   ],
   do: [
-    { id: 'budget', label: 'What\'s your budget?', options: ['Free', '$ Under $20', '$$ Under $50', '$$$ Sky\'s the limit'] },
+    { id: 'budget', label: 'What\'s your budget?', options: ['Free', 'Budget (~2000 Ft)', 'Mid-range (~5000 Ft)', 'Premium (10000+ Ft)'] },
     { id: 'energy-level', label: 'How much energy do you have?', options: ['Low-key & relaxed', 'Moderate', 'Active & physical', 'Full send'] },
     { id: 'indoor-outdoor', label: 'Indoor or outdoor?', options: ['Indoor', 'Outdoor', 'Either works', 'Something unique'] },
     { id: 'group-size', label: 'How many people?', options: ['Just me', '2–3 people', '4–6 people', 'Big group (7+)'] },
