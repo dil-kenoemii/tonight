@@ -20,8 +20,7 @@ const QUESTIONS: Record<Category, Question[]> = {
     { id: 'budget', label: 'What\'s your budget?', options: ['Budget (~2000 Ft)', 'Mid-range (~5000 Ft)', 'Upscale (~10000 Ft)', 'Fine dining (15000+ Ft)'] },
     { id: 'cuisine', label: 'What cuisines sound good? (select all that apply)', options: ['Hungarian', 'Italian', 'Asian', 'Middle Eastern', 'Mediterranean', 'American', 'Mexican', 'French', 'Indian', 'Vegetarian/Vegan', 'Surprise me'] },
     { id: 'vibe', label: 'What vibes are you feeling? (select all that apply)', options: ['Quick & casual', 'Sit-down dinner', 'Trendy / hip', 'Cozy & traditional', 'Fine dining', 'Outdoor seating', 'Romantic'] },
-    { id: 'dietary', label: 'Any dietary needs? (select all that apply)', options: ['No restrictions', 'Vegetarian-friendly', 'Vegan options', 'Gluten-free options', 'Halal', 'Kosher', 'Healthy / light'] },
-    { id: 'distance', label: 'How far will you go?', options: ['Walking distance', 'Within Budapest', 'Worth the trip', 'Anywhere in the city'] },
+    { id: 'dietary', label: 'Any dietary needs? (select all that apply)', options: ['No restrictions', 'Vegetarian-friendly', 'Vegan options', 'Gluten-free options', 'Healthy / light'] },
   ],
   watch: [
     { id: 'genre', label: 'What genre are you in the mood for?', options: ['Comedy', 'Action / Thriller', 'Drama / Romance', 'Sci-fi / Horror'] },
