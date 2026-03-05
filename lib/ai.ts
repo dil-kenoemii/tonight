@@ -52,10 +52,30 @@ export async function generateSuggestions(
     ? '- Suggest real activities, attractions, or venues that exist in Budapest'
     : '- Suggest real movie titles or shows (location not applicable for watching content)';
 
+  // For movies, add current date context and theatrical release guidance
+  const currentDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const watchContext = category === 'watch' ? `Current Date: ${currentDate}\n` : '';
+
+  // Special instructions for theatrical releases
+  // Note: Claude's knowledge cutoff may be before the current date, so it will make educated
+  // guesses about current theatrical releases based on typical release patterns and seasons
+  const platform = quizResponses.platform as string;
+  const isTheaterSelected = platform === 'Theater';
+  const theaterGuidance = isTheaterSelected
+    ? `\nIMPORTANT: User selected "Theater" - suggest movies that are likely playing in theaters RIGHT NOW (${currentDate}).
+- Focus on recent major releases (within last 1-3 months)
+- Include big-budget films, blockbusters, and wide releases that would be in Budapest cinemas
+- Consider the current season (what types of movies typically release in this period)
+- Avoid older films or streaming-exclusive content
+- If unsure about exact current releases, suggest popular recent releases that match their genre preferences
+- Prioritize well-known franchises, sequels, and major studio releases`
+    : '';
+
   const prompt = `You are helping a group in Budapest, Hungary decide ${CATEGORY_LABELS[category]}.
 
-${locationContext}User preferences from quiz:
+${locationContext}${watchContext}User preferences from quiz:
 ${JSON.stringify(quizResponses, null, 2)}
+${theaterGuidance}
 
 Generate exactly 5 specific, realistic suggestions that match their stated preferences.
 
@@ -74,6 +94,15 @@ Example output for restaurants in Budapest:
     "text": "Bors GasztroBar",
     "reasoning": "Budget-friendly Hungarian soup bar in the Jewish Quarter",
     "confidence": 0.9
+  }
+]
+
+Example output for movies in theater:
+[
+  {
+    "text": "Dune: Part Two",
+    "reasoning": "Epic sci-fi currently in theaters, matches action preference",
+    "confidence": 0.95
   }
 ]
 
