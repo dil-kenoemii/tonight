@@ -248,6 +248,7 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
 
     return (
       <SpinWheel
+        key={spinResult.winner.id} // Force remount on new winner to restart animation
         options={nonVetoedOptions}
         winnerIndex={spinResult.winnerIndex}
         winnerText={spinResult.winner.text}
