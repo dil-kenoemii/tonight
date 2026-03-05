@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
-    "@google/generative-ai": "^0.24.1",
+    "@aws-sdk/client-bedrock-runtime": "^3.1002.0",
     "canvas-confetti": "^1.9.4",
     "date-fns": "^4.1.0",
     "dotenv": "^17.3.1",

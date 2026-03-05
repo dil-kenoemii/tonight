@@ -1,18 +1,24 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 import { Category, QuizResponses, AiSuggestion } from '../types';
 
 // Lazy-initialized client — only created when first needed
-let genAI: GoogleGenerativeAI | null = null;
+let bedrockClient: BedrockRuntimeClient | null = null;
 
-function getClient(): GoogleGenerativeAI {
-  if (!genAI) {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error('GEMINI_API_KEY environment variable is not set');
-    }
-    genAI = new GoogleGenerativeAI(apiKey);
+function getClient(): BedrockRuntimeClient {
+  if (!bedrockClient) {
+    const region = process.env.AWS_REGION || 'us-west-2';
+
+    // For local development with AWS SSO, the SDK will use AWS_PROFILE from env
+    // For production, set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
+    bedrockClient = new BedrockRuntimeClient({
+      region,
+      // Credentials are automatically loaded from:
+      // 1. Environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+      // 2. AWS profile (AWS_PROFILE)
+      // 3. IAM role (if running on AWS)
+    });
   }
-  return genAI;
+  return bedrockClient;
 }
 
 const CATEGORY_LABELS: Record<Category, string> = {
@@ -23,14 +29,13 @@ const CATEGORY_LABELS: Record<Category, string> = {
 
 /**
  * Generates 3 AI suggestions based on category and quiz responses.
- * Calls Google Gemini and parses the JSON response.
+ * Calls AWS Bedrock (Claude) and parses the JSON response.
  */
 export async function generateSuggestions(
   category: Category,
   quizResponses: QuizResponses
 ): Promise<AiSuggestion[]> {
   const client = getClient();
-  const model = client.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
   const prompt = `You are helping a group decide ${CATEGORY_LABELS[category]}.
 
@@ -57,15 +62,40 @@ Example output:
 
 Respond with ONLY the JSON array, no other text.`;
 
-  const result = await model.generateContent(prompt);
-  const response = result.response;
-  const text = response.text();
+  // Prepare Bedrock API request for Claude
+  const payload = {
+    anthropic_version: 'bedrock-2023-05-31',
+    max_tokens: 1000,
+    messages: [
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ],
+  };
 
-  if (!text) {
+  const command = new InvokeModelCommand({
+    modelId: 'anthropic.claude-3-5-sonnet-20241022-v2:0', // Claude 3.5 Sonnet
+    contentType: 'application/json',
+    accept: 'application/json',
+    body: JSON.stringify(payload),
+  });
+
+  // Invoke Bedrock model
+  const response = await client.send(command);
+
+  // Parse response body
+  const responseBody = JSON.parse(new TextDecoder().decode(response.body));
+
+  // Extract text from Claude's response
+  const textContent = responseBody.content?.find((block: any) => block.type === 'text');
+  if (!textContent || !textContent.text) {
     throw new Error('No text content in AI response');
   }
 
-  // Strip markdown code fences if present (Gemini sometimes wraps JSON in ```json ... ```)
+  const text = textContent.text;
+
+  // Strip markdown code fences if present (Claude sometimes wraps JSON in ```json ... ```)
   const cleaned = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
 
   // Parse JSON from response
