@@ -7,6 +7,7 @@ import OptionsList from './OptionsList';
 import AddOptionForm from './AddOptionForm';
 import SpinWheel from './SpinWheel';
 import ResultView from './ResultView';
+import AiQuizModal from './AiQuizModal';
 import useCopyToClipboard from '@/hooks/useCopyToClipboard';
 
 interface RoomViewProps {
@@ -142,24 +143,25 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
     return <ResultView roomCode={roomCode} roomState={roomState} />;
   }
 
-  // Show AI quiz placeholder if user opted in
+  // Show AI quiz if user opted in
   if (aiState === 'quiz') {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6 flex items-center justify-center">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8 text-center">
-          <div className="text-6xl mb-4">🤖</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Quiz coming soon</h2>
-          <p className="text-gray-600 mb-6">
-            We&apos;ll ask you 5 quick questions to generate personalized suggestions.
-          </p>
-          <button
-            onClick={() => setAiState('idle')}
-            className="h-11 px-6 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors duration-200"
-          >
-            Skip
-          </button>
+    if (!roomState) {
+      return (
+        <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-4xl mb-4">⏳</div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
         </div>
-      </div>
+      );
+    }
+
+    return (
+      <AiQuizModal
+        category={roomState.room.category}
+        roomCode={roomCode}
+        onComplete={() => setAiState('idle')}
+      />
     );
   }
 
