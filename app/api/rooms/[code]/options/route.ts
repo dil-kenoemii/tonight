@@ -52,7 +52,7 @@ export async function POST(
 
     // Parse request body
     const body = await request.json();
-    const { text, source, ai_metadata } = body;
+    const { text } = body;
 
     // Validate option text
     const textValidation = validateOptionText(text);
@@ -114,14 +114,11 @@ export async function POST(
       }
 
       // Insert option
-      const optionSource = source === 'ai' ? 'ai' : 'user';
-      const optionAiMetadata = optionSource === 'ai' && ai_metadata ? JSON.stringify(ai_metadata) : null;
-
       const optionResult = await client.query(
-        `INSERT INTO options (room_id, participant_id, text, is_vetoed, vetoed_by_id, source, ai_metadata)
-         VALUES ($1, $2, $3, false, NULL, $4, $5)
-         RETURNING id, room_id, participant_id, text, is_vetoed, vetoed_by_id, source, ai_metadata, created_at`,
-        [room.id, participantId, textValidation.trimmed, optionSource, optionAiMetadata]
+        `INSERT INTO options (room_id, participant_id, text, is_vetoed, vetoed_by_id)
+         VALUES ($1, $2, $3, false, NULL)
+         RETURNING id, room_id, participant_id, text, is_vetoed, vetoed_by_id, created_at`,
+        [room.id, participantId, textValidation.trimmed]
       );
 
       await client.query('COMMIT');
