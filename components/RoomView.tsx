@@ -253,13 +253,15 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
 
   // Show spin wheel if spinning or room is decided
   if (spinResult && roomState) {
-    const nonVetoedOptions = roomState.options.filter(opt => !opt.is_vetoed);
-    const canRespin = nonVetoedOptions.length >= 3; // Need at least 3 options (current winner + 2 more)
+    // Use allOptions from spinResult (already filtered by API) instead of recalculating from roomState
+    // This ensures the wheel shows the correct filtered list immediately after respin
+    const options = spinResult.allOptions;
+    const canRespin = options.length >= 3; // Need at least 3 options (current winner + 2 more)
 
     return (
       <SpinWheel
         key={spinResult.winner.id} // Force remount on new winner to restart animation
-        options={nonVetoedOptions}
+        options={options}
         winnerIndex={spinResult.winnerIndex}
         winnerText={spinResult.winner.text}
         winnerParticipantName={spinResult.winner.participant_name}
