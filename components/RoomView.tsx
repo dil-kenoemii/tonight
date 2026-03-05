@@ -217,9 +217,34 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
     }
   };
 
+  const handleRespin = async (winnerOptionId: number) => {
+    try {
+      const response = await fetch(`/api/rooms/${roomCode}/respin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ winnerOptionId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Failed to respin wheel');
+        return;
+      }
+
+      // Update spin result with new winner
+      setSpinResult(data);
+    } catch {
+      setError('Network error. Please try again.');
+    }
+  };
+
   // Show spin wheel if spinning or room is decided
   if (spinResult && roomState) {
     const nonVetoedOptions = roomState.options.filter(opt => !opt.is_vetoed);
+    const canRespin = nonVetoedOptions.length >= 3; // Need at least 3 options (current winner + 2 more)
 
     return (
       <SpinWheel
@@ -228,6 +253,9 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
         winnerText={spinResult.winner.text}
         winnerParticipantName={spinResult.winner.participant_name}
         isHost={isHost}
+        winnerOptionId={spinResult.winner.id}
+        onRespin={handleRespin}
+        canRespin={canRespin}
       />
     );
   }

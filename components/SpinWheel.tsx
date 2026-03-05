@@ -11,6 +11,9 @@ interface SpinWheelProps {
   winnerText: string;
   winnerParticipantName: string;
   isHost: boolean;
+  winnerOptionId?: number;
+  onRespin?: (winnerId: number) => Promise<void>;
+  canRespin?: boolean;
 }
 
 // Wheel colors (constant - moved outside component to avoid React hooks warning)
@@ -33,10 +36,14 @@ export default function SpinWheel({
   winnerText,
   winnerParticipantName,
   isHost,
+  winnerOptionId,
+  onRespin,
+  canRespin = false,
 }: SpinWheelProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isSpinning, setIsSpinning] = useState(true);
   const [showWinner, setShowWinner] = useState(false);
+  const [isRespinning, setIsRespinning] = useState(false);
   const animationStartedRef = useRef(false);
   const router = useRouter();
 
@@ -258,6 +265,18 @@ export default function SpinWheel({
     router.push('/');
   };
 
+  const handleRespin = async () => {
+    if (!onRespin || !winnerOptionId || isRespinning) return;
+
+    setIsRespinning(true);
+    try {
+      await onRespin(winnerOptionId);
+    } catch (error) {
+      console.error('Respin failed:', error);
+      setIsRespinning(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50">
       <div className="max-w-md w-full">
@@ -282,12 +301,28 @@ export default function SpinWheel({
             <p className="text-gray-600 mb-6">
               Suggested by {winnerParticipantName}
             </p>
-            <button
-              onClick={handleNewRound}
-              className="w-full h-14 bg-gradient-to-r from-green-400 to-teal-500 text-white font-bold text-xl rounded-lg hover:shadow-xl transition-all duration-200"
-            >
-              New Round
-            </button>
+
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              {/* Respin button (host only, if available) */}
+              {isHost && canRespin && onRespin && (
+                <button
+                  onClick={handleRespin}
+                  disabled={isRespinning}
+                  className="w-full h-14 bg-gradient-to-r from-orange-400 to-red-500 text-white font-bold text-xl rounded-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isRespinning ? 'Excluding...' : '❌ Exclude & Spin Again'}
+                </button>
+              )}
+
+              {/* New Round button */}
+              <button
+                onClick={handleNewRound}
+                className="w-full h-14 bg-gradient-to-r from-green-400 to-teal-500 text-white font-bold text-xl rounded-lg hover:shadow-xl transition-all duration-200"
+              >
+                🎲 New Round
+              </button>
+            </div>
           </div>
         )}
 
