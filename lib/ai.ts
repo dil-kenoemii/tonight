@@ -1,18 +1,18 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Category, QuizResponses, AiSuggestion } from '../types';
 
 // Lazy-initialized client — only created when first needed
-let client: Anthropic | null = null;
+let genAI: GoogleGenerativeAI | null = null;
 
-function getClient(): Anthropic {
-  if (!client) {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+function getClient(): GoogleGenerativeAI {
+  if (!genAI) {
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error('ANTHROPIC_API_KEY environment variable is not set');
+      throw new Error('GEMINI_API_KEY environment variable is not set');
     }
-    client = new Anthropic({ apiKey });
+    genAI = new GoogleGenerativeAI(apiKey);
   }
-  return client;
+  return genAI;
 }
 
 const CATEGORY_LABELS: Record<Category, string> = {
@@ -23,13 +23,14 @@ const CATEGORY_LABELS: Record<Category, string> = {
 
 /**
  * Generates 3 AI suggestions based on category and quiz responses.
- * Calls Claude Sonnet and parses the JSON response.
+ * Calls Google Gemini and parses the JSON response.
  */
 export async function generateSuggestions(
   category: Category,
   quizResponses: QuizResponses
 ): Promise<AiSuggestion[]> {
-  const anthropic = getClient();
+  const client = getClient();
+  const model = client.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
   const prompt = `You are helping a group decide ${CATEGORY_LABELS[category]}.
 
@@ -56,22 +57,21 @@ Example output:
 
 Respond with ONLY the JSON array, no other text.`;
 
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 500,
-    messages: [{ role: 'user', content: prompt }],
-  });
+  const result = await model.generateContent(prompt);
+  const response = result.response;
+  const text = response.text();
 
-  // Extract text from response
-  const textBlock = message.content.find((block) => block.type === 'text');
-  if (!textBlock || textBlock.type !== 'text') {
+  if (!text) {
     throw new Error('No text content in AI response');
   }
+
+  // Strip markdown code fences if present (Gemini sometimes wraps JSON in ```json ... ```)
+  const cleaned = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
 
   // Parse JSON from response
   let suggestions: unknown;
   try {
-    suggestions = JSON.parse(textBlock.text);
+    suggestions = JSON.parse(cleaned);
   } catch {
     throw new Error('AI response was not valid JSON');
   }

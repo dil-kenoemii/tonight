@@ -26,6 +26,7 @@ Can't decide where to eat, what to watch, or what to do? Create a room, invite f
 ### Using the Live App
 
 1. Visit **[tonight-production-82b1.up.railway.app](https://tonight-production-82b1.up.railway.app)**
+
 2. Choose a category: 🍕 Where to Eat | 🎬 What to Watch | 🎯 What to Do
 3. Enter your name and create a room
 4. Share the link with friends
