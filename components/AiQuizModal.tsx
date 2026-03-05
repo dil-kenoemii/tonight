@@ -18,9 +18,9 @@ interface Question {
 const QUESTIONS: Record<Category, Question[]> = {
   eat: [
     { id: 'budget', label: 'What\'s your budget?', options: ['Budget (~2000 Ft)', 'Mid-range (~5000 Ft)', 'Upscale (~10000 Ft)', 'Fine dining (15000+ Ft)'] },
-    { id: 'cuisine', label: 'What cuisine sounds good?', options: ['Hungarian', 'International', 'Asian / Middle Eastern', 'Surprise me'] },
-    { id: 'vibe', label: 'What vibe are you feeling?', options: ['Quick & casual', 'Sit-down dinner', 'Trendy / hip', 'Cozy & traditional'] },
-    { id: 'dietary', label: 'Any dietary needs?', options: ['No restrictions', 'Vegetarian-friendly', 'Gluten-free options', 'Healthy / light'] },
+    { id: 'cuisine', label: 'What cuisines sound good? (select all that apply)', options: ['Hungarian', 'Italian', 'Asian', 'Middle Eastern', 'Mediterranean', 'American', 'Mexican', 'French', 'Indian', 'Vegetarian/Vegan', 'Surprise me'] },
+    { id: 'vibe', label: 'What vibes are you feeling? (select all that apply)', options: ['Quick & casual', 'Sit-down dinner', 'Trendy / hip', 'Cozy & traditional', 'Fine dining', 'Outdoor seating', 'Romantic'] },
+    { id: 'dietary', label: 'Any dietary needs? (select all that apply)', options: ['No restrictions', 'Vegetarian-friendly', 'Vegan options', 'Gluten-free options', 'Halal', 'Kosher', 'Healthy / light'] },
     { id: 'distance', label: 'How far will you go?', options: ['Walking distance', 'Within Budapest', 'Worth the trip', 'Anywhere in the city'] },
   ],
   watch: [
@@ -52,15 +52,45 @@ export default function AiQuizModal({ category, roomCode, onComplete }: AiQuizMo
   const questions = QUESTIONS[category];
   const totalQuestions = questions.length;
 
-  const handleAnswer = async (questionId: string, answer: string) => {
-    const newResponses = { ...responses, [questionId]: answer };
-    setResponses(newResponses);
+  // Toggle selection for multi-choice questions
+  const handleToggleAnswer = (questionId: string, option: string) => {
+    const currentAnswer = responses[questionId];
+    let newAnswer: string | string[];
 
+    if (Array.isArray(currentAnswer)) {
+      // Already an array, toggle this option
+      if (currentAnswer.includes(option)) {
+        newAnswer = currentAnswer.filter(o => o !== option);
+      } else {
+        newAnswer = [...currentAnswer, option];
+      }
+    } else {
+      // First selection for this question
+      newAnswer = [option];
+    }
+
+    setResponses({ ...responses, [questionId]: newAnswer });
+  };
+
+  // Check if current question has at least one selection
+  const hasSelection = () => {
+    const currentAnswer = responses[questions[step].id];
+    return Array.isArray(currentAnswer) ? currentAnswer.length > 0 : !!currentAnswer;
+  };
+
+  // Check if an option is selected
+  const isSelected = (questionId: string, option: string): boolean => {
+    const answer = responses[questionId];
+    return Array.isArray(answer) ? answer.includes(option) : answer === option;
+  };
+
+  // Handle Next/Submit button
+  const handleNext = async () => {
     if (step < totalQuestions - 1) {
-      // Advance to next question
+      // Move to next question
       setStep(step + 1);
     } else {
-      // Last question answered — submit to API
+      // Last question — submit to API
       setIsSubmitting(true);
       setError('');
 
@@ -68,7 +98,7 @@ export default function AiQuizModal({ category, roomCode, onComplete }: AiQuizMo
         const res = await fetch(`/api/rooms/${roomCode}/ai-suggest`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ responses: newResponses }),
+          body: JSON.stringify({ responses }),
         });
 
         const data = await res.json();
@@ -230,18 +260,43 @@ export default function AiQuizModal({ category, roomCode, onComplete }: AiQuizMo
           </div>
         )}
 
-        {/* Answer buttons */}
+        {/* Answer options with checkboxes */}
         <div className="space-y-3 mb-6">
-          {currentQuestion.options.map((option) => (
-            <button
-              key={option}
-              onClick={() => handleAnswer(currentQuestion.id, option)}
-              className="w-full h-12 text-left px-4 bg-gray-50 border border-gray-200 rounded-lg font-medium text-gray-800 hover:bg-blue-50 hover:border-blue-300 transition-colors duration-200"
-            >
-              {option}
-            </button>
-          ))}
+          {currentQuestion.options.map((option) => {
+            const selected = isSelected(currentQuestion.id, option);
+            return (
+              <button
+                key={option}
+                onClick={() => handleToggleAnswer(currentQuestion.id, option)}
+                className={`w-full min-h-[44px] text-left px-4 py-3 border-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-3 ${
+                  selected
+                    ? 'bg-blue-50 border-blue-500 text-blue-900'
+                    : 'bg-gray-50 border-gray-200 text-gray-800 hover:bg-blue-50 hover:border-blue-300'
+                }`}
+              >
+                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                  selected ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
+                }`}>
+                  {selected && (
+                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+                <span className="flex-1">{option}</span>
+              </button>
+            );
+          })}
         </div>
+
+        {/* Next/Submit button */}
+        <button
+          onClick={handleNext}
+          disabled={!hasSelection()}
+          className="w-full h-12 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 mb-4"
+        >
+          {step < totalQuestions - 1 ? 'Next' : 'Get Suggestions'}
+        </button>
 
         {/* Skip link */}
         <div className="text-center">

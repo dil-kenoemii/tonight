@@ -28,7 +28,7 @@ const CATEGORY_LABELS: Record<Category, string> = {
 };
 
 /**
- * Generates 3 AI suggestions based on category and quiz responses.
+ * Generates 5 AI suggestions based on category and quiz responses.
  * Calls AWS Bedrock (Claude) and parses the JSON response.
  */
 export async function generateSuggestions(
@@ -57,7 +57,7 @@ export async function generateSuggestions(
 ${locationContext}User preferences from quiz:
 ${JSON.stringify(quizResponses, null, 2)}
 
-Generate exactly 3 specific, realistic suggestions that match their stated preferences.
+Generate exactly 5 specific, realistic suggestions that match their stated preferences.
 
 Requirements:
 - Be specific: Real place names, movie titles, activity names (not generic)
@@ -123,9 +123,9 @@ Respond with ONLY the JSON array, no other text.`;
     throw new Error('AI response was not valid JSON');
   }
 
-  // Validate structure: must be array of 3 objects with text/reasoning/confidence
-  if (!Array.isArray(suggestions) || suggestions.length !== 3) {
-    throw new Error('AI response must be an array of exactly 3 suggestions');
+  // Validate structure: must be array of 5 objects with text/reasoning/confidence
+  if (!Array.isArray(suggestions) || suggestions.length !== 5) {
+    throw new Error('AI response must be an array of exactly 5 suggestions');
   }
 
   for (const suggestion of suggestions) {
