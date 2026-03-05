@@ -125,7 +125,7 @@ Respond with ONLY the JSON array, no other text.`;
   const responseBody = JSON.parse(new TextDecoder().decode(response.body));
 
   // Extract text from Claude's response
-  const textContent = responseBody.content?.find((block: any) => block.type === 'text');
+  const textContent = responseBody.content?.find((block: { type: string; text?: string }) => block.type === 'text');
   if (!textContent || !textContent.text) {
     throw new Error('No text content in AI response');
   }
