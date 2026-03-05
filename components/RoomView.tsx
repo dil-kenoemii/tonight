@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { RoomState, Category, Option } from '@/types';
+import Header from './Header';
 import ParticipantList from './ParticipantList';
 import OptionsList from './OptionsList';
 import AddOptionForm from './AddOptionForm';
@@ -235,6 +236,8 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6">
       <div className="max-w-2xl mx-auto">
+        <Header />
+
         {/* Room Header */}
         <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8 mb-6">
           <div className="text-center mb-6">

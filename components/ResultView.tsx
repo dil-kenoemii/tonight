@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Header from './Header';
 import type { RoomState } from '@/types';
 
 interface ResultViewProps {
@@ -32,6 +33,8 @@ export default function ResultView({ roomCode, roomState }: ResultViewProps) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6">
       <div className="max-w-2xl mx-auto">
+        <Header />
+
         {/* Room Header */}
         <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8 mb-6">
           <div className="text-center mb-6">

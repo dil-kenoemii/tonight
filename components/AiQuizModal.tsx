@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Header from '@/components/Header';
 import type { Category, QuizResponses, AiSuggestion } from '@/types';
 
 interface AiQuizModalProps {
@@ -155,11 +156,14 @@ export default function AiQuizModal({ category, roomCode, onComplete }: AiQuizMo
   // Loading state while generating suggestions
   if (isSubmitting) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6 flex items-center justify-center">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8 text-center">
-          <div className="text-6xl mb-4 animate-pulse">🤖</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Generating suggestions...</h2>
-          <p className="text-gray-600">Our AI is thinking about the perfect options for your group.</p>
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6">
+        <div className="max-w-md mx-auto mt-8">
+          <Header />
+          <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8 text-center mt-12">
+            <div className="text-6xl mb-4 animate-pulse">🤖</div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Generating suggestions...</h2>
+            <p className="text-gray-600">Our AI is thinking about the perfect options for your group.</p>
+          </div>
         </div>
       </div>
     );
@@ -168,8 +172,10 @@ export default function AiQuizModal({ category, roomCode, onComplete }: AiQuizMo
   // Results view — show suggestion cards
   if (suggestions) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6 flex items-center justify-center">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8">
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6">
+        <div className="max-w-md mx-auto mt-8">
+          <Header />
+          <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8">
           <div className="text-center mb-6">
             <div className="text-4xl mb-2">✨</div>
             <h2 className="text-2xl font-bold text-gray-900 mb-1">AI Suggestions</h2>
@@ -218,12 +224,13 @@ export default function AiQuizModal({ category, roomCode, onComplete }: AiQuizMo
             })}
           </div>
 
-          <button
-            onClick={onComplete}
-            className="w-full h-11 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors duration-200"
-          >
-            Done
-          </button>
+            <button
+              onClick={onComplete}
+              className="w-full h-11 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors duration-200"
+            >
+              Done
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -233,8 +240,10 @@ export default function AiQuizModal({ category, roomCode, onComplete }: AiQuizMo
   const currentQuestion = questions[step];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6 flex items-center justify-center">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6">
+      <div className="max-w-md mx-auto mt-8">
+        <Header />
+        <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8">
         {/* Progress */}
         <div className="text-center mb-6">
           <div className="text-sm text-gray-500 mb-2">
@@ -288,23 +297,34 @@ export default function AiQuizModal({ category, roomCode, onComplete }: AiQuizMo
           })}
         </div>
 
-        {/* Next/Submit button */}
-        <button
-          onClick={handleNext}
-          disabled={!hasSelection()}
-          className="w-full h-12 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 mb-4"
-        >
-          {step < totalQuestions - 1 ? 'Next' : 'Get Suggestions'}
-        </button>
-
-        {/* Skip link */}
-        <div className="text-center">
+        {/* Navigation buttons */}
+        <div className="flex gap-3 mb-4">
+          {step > 0 && (
+            <button
+              onClick={() => setStep(step - 1)}
+              className="h-12 px-6 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 transition-colors duration-200"
+            >
+              ← Back
+            </button>
+          )}
           <button
-            onClick={onComplete}
-            className="text-sm text-gray-400 hover:text-gray-600 underline"
+            onClick={handleNext}
+            disabled={!hasSelection()}
+            className="flex-1 h-12 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
-            Skip
+            {step < totalQuestions - 1 ? 'Next' : 'Get Suggestions'}
           </button>
+        </div>
+
+          {/* Skip link */}
+          <div className="text-center">
+            <button
+              onClick={onComplete}
+              className="text-sm text-gray-400 hover:text-gray-600 underline"
+            >
+              Skip
+            </button>
+          </div>
         </div>
       </div>
     </div>

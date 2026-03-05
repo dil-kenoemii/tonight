@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Header from '@/components/Header';
 import type { RoomState, Category } from '@/types';
 
 interface JoinFormProps {
@@ -97,12 +98,15 @@ export default function JoinForm({ roomCode }: JoinFormProps) {
   // Show error if room fetch failed
   if (fetchError) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6 flex items-center justify-center">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8">
-          <div className="text-center">
-            <div className="text-6xl mb-4">❌</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Error</h2>
-            <p className="text-gray-600">{fetchError}</p>
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6">
+        <div className="max-w-md mx-auto mt-8">
+          <Header />
+          <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8">
+            <div className="text-center">
+              <div className="text-6xl mb-4">❌</div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Error</h2>
+              <p className="text-gray-600">{fetchError}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -112,10 +116,13 @@ export default function JoinForm({ roomCode }: JoinFormProps) {
   // Show loading state while fetching room
   if (!roomState) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4">⏳</div>
-          <p className="text-gray-600">Loading room...</p>
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6">
+        <div className="max-w-md mx-auto mt-8">
+          <Header />
+          <div className="text-center mt-12">
+            <div className="text-4xl mb-4">⏳</div>
+            <p className="text-gray-600">Loading room...</p>
+          </div>
         </div>
       </div>
     );
@@ -127,6 +134,8 @@ export default function JoinForm({ roomCode }: JoinFormProps) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6">
       <div className="max-w-md mx-auto mt-8">
+        <Header />
+
         {/* Room Info */}
         <div className="text-center mb-8">
           <div className="mb-4">

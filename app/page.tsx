@@ -24,8 +24,9 @@ export default function Home() {
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="text-center mb-12 mt-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            SpinDecide
+          <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-3">
+            <span className="text-4xl">🎡</span>
+            <span>SpinDecide</span>
           </h1>
           <p className="text-gray-600">
             Let the wheel decide!
