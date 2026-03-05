@@ -1,24 +1,18 @@
-import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
+import Anthropic from '@anthropic-ai/sdk';
 import { Category, QuizResponses, AiSuggestion } from '../types';
 
 // Lazy-initialized client — only created when first needed
-let bedrockClient: BedrockRuntimeClient | null = null;
+let anthropicClient: Anthropic | null = null;
 
-function getClient(): BedrockRuntimeClient {
-  if (!bedrockClient) {
-    const region = process.env.AWS_REGION || 'us-west-2';
-
-    // For local development with AWS SSO, the SDK will use AWS_PROFILE from env
-    // For production, set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
-    bedrockClient = new BedrockRuntimeClient({
-      region,
-      // Credentials are automatically loaded from:
-      // 1. Environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
-      // 2. AWS profile (AWS_PROFILE)
-      // 3. IAM role (if running on AWS)
-    });
+function getClient(): Anthropic {
+  if (!anthropicClient) {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      throw new Error('ANTHROPIC_API_KEY environment variable is not set');
+    }
+    anthropicClient = new Anthropic({ apiKey });
   }
-  return bedrockClient;
+  return anthropicClient;
 }
 
 const CATEGORY_LABELS: Record<Category, string> = {
@@ -29,7 +23,7 @@ const CATEGORY_LABELS: Record<Category, string> = {
 
 /**
  * Generates 5 AI suggestions based on category and quiz responses.
- * Calls AWS Bedrock (Claude) and parses the JSON response.
+ * Calls Anthropic API (Claude) and parses the JSON response.
  */
 export async function generateSuggestions(
   category: Category,
@@ -99,9 +93,9 @@ Example output for movies/shows:
 
 Respond with ONLY the JSON array, no other text.`;
 
-  // Prepare Bedrock API request for Claude
-  const payload = {
-    anthropic_version: 'bedrock-2023-05-31',
+  // Call Anthropic API directly
+  const message = await client.messages.create({
+    model: 'claude-3-5-sonnet-20241022',
     max_tokens: 1000,
     messages: [
       {
@@ -109,24 +103,11 @@ Respond with ONLY the JSON array, no other text.`;
         content: prompt,
       },
     ],
-  };
-
-  const command = new InvokeModelCommand({
-    modelId: 'anthropic.claude-3-5-sonnet-20241022-v2:0', // Claude 3.5 Sonnet
-    contentType: 'application/json',
-    accept: 'application/json',
-    body: JSON.stringify(payload),
   });
 
-  // Invoke Bedrock model
-  const response = await client.send(command);
-
-  // Parse response body
-  const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-
   // Extract text from Claude's response
-  const textContent = responseBody.content?.find((block: { type: string; text?: string }) => block.type === 'text');
-  if (!textContent || !textContent.text) {
+  const textContent = message.content.find((block) => block.type === 'text');
+  if (!textContent || textContent.type !== 'text') {
     throw new Error('No text content in AI response');
   }
 
