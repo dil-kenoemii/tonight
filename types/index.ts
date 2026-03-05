@@ -29,8 +29,8 @@ export interface AiMetadata {
   confidence: number;
 }
 
-// Quiz responses keyed by question identifier
-export type QuizResponses = { [key: string]: string };
+// Quiz responses keyed by question identifier (supports multi-select)
+export type QuizResponses = { [key: string]: string | string[] };
 
 // A single AI suggestion returned by the Claude API
 export interface AiSuggestion {
