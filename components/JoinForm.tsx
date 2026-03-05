@@ -16,6 +16,7 @@ const categoryLabels: Record<Category, string> = {
 
 export default function JoinForm({ roomCode }: JoinFormProps) {
   const [name, setName] = useState('');
+  const [aiEnabled, setAiEnabled] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [roomState, setRoomState] = useState<RoomState | null>(null);
@@ -81,6 +82,9 @@ export default function JoinForm({ roomCode }: JoinFormProps) {
         setIsLoading(false);
         return;
       }
+
+      // Save AI preference before navigating
+      localStorage.setItem('spindecide_ai_enabled', aiEnabled ? 'true' : 'false');
 
       // Success - reload page to show room view
       router.refresh();
@@ -164,6 +168,21 @@ export default function JoinForm({ roomCode }: JoinFormProps) {
                 autoFocus
               />
             </div>
+
+            {/* AI suggestions checkbox */}
+            <label className="flex items-start gap-3 mb-4 min-h-[44px] cursor-pointer">
+              <input
+                type="checkbox"
+                checked={aiEnabled}
+                onChange={(e) => setAiEnabled(e.target.checked)}
+                disabled={isLoading}
+                className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+              />
+              <div>
+                <span className="text-sm font-semibold text-gray-700">Get AI suggestions</span>
+                <p className="text-xs text-gray-500 mt-0.5">Answer 5 quick questions for personalized options</p>
+              </div>
+            </label>
 
             {/* Error message */}
             {error && (

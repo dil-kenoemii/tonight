@@ -37,6 +37,7 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
   const [error, setError] = useState('');
   const [isSpinning, setIsSpinning] = useState(false);
   const [spinResult, setSpinResult] = useState<SpinResult | null>(null);
+  const [aiState, setAiState] = useState<'idle' | 'quiz'>('idle');
   const { copyToClipboard, copied } = useCopyToClipboard();
 
   // Polling for room updates
@@ -66,6 +67,15 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
     // Cleanup on unmount
     return () => clearInterval(interval);
   }, [roomCode]);
+
+  // Check if user opted into AI suggestions
+  useEffect(() => {
+    const aiEnabled = localStorage.getItem('spindecide_ai_enabled');
+    if (aiEnabled === 'true') {
+      setAiState('quiz');
+    }
+    localStorage.removeItem('spindecide_ai_enabled');
+  }, []);
 
   // Check if room status changed to 'decided' (for participants)
   useEffect(() => {
@@ -130,6 +140,27 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
   // Late joiners see the read-only result view instead of interactive UI
   if (roomState.room.status === 'decided' && !spinResult && !isSpinning) {
     return <ResultView roomCode={roomCode} roomState={roomState} />;
+  }
+
+  // Show AI quiz placeholder if user opted in
+  if (aiState === 'quiz') {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6 flex items-center justify-center">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8 text-center">
+          <div className="text-6xl mb-4">🤖</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Quiz coming soon</h2>
+          <p className="text-gray-600 mb-6">
+            We&apos;ll ask you 5 quick questions to generate personalized suggestions.
+          </p>
+          <button
+            onClick={() => setAiState('idle')}
+            className="h-11 px-6 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors duration-200"
+          >
+            Skip
+          </button>
+        </div>
+      </div>
+    );
   }
 
   // Count current participant's options
