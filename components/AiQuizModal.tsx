@@ -91,30 +91,46 @@ export default function AiQuizModal({ category, roomCode, onComplete }: AiQuizMo
       setStep(step + 1);
     } else {
       // Last question — submit to API
-      setIsSubmitting(true);
-      setError('');
+      await submitQuiz();
+    }
+  };
 
-      try {
-        const res = await fetch(`/api/rooms/${roomCode}/ai-suggest`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ responses }),
-        });
+  // Handle Skip button - skip current question
+  const handleSkip = async () => {
+    if (step < totalQuestions - 1) {
+      // Skip to next question
+      setStep(step + 1);
+    } else {
+      // Last question - submit with whatever answers we have
+      await submitQuiz();
+    }
+  };
 
-        const data = await res.json();
+  // Submit quiz to API
+  const submitQuiz = async () => {
+    setIsSubmitting(true);
+    setError('');
 
-        if (!res.ok) {
-          setError(data.error || 'Failed to generate suggestions');
-          setIsSubmitting(false);
-          return;
-        }
+    try {
+      const res = await fetch(`/api/rooms/${roomCode}/ai-suggest`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ responses }),
+      });
 
-        setSuggestions(data.suggestions);
-      } catch {
-        setError('Network error. Please try again.');
-      } finally {
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Failed to generate suggestions');
         setIsSubmitting(false);
+        return;
       }
+
+      setSuggestions(data.suggestions);
+    } catch {
+      setError('Network error. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -245,9 +261,17 @@ export default function AiQuizModal({ category, roomCode, onComplete }: AiQuizMo
         <Header />
         <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8">
         {/* Progress */}
-        <div className="text-center mb-6">
-          <div className="text-sm text-gray-500 mb-2">
-            Question {step + 1} of {totalQuestions}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-sm text-gray-500">
+              Question {step + 1} of {totalQuestions}
+            </div>
+            <button
+              onClick={onComplete}
+              className="text-xs text-gray-400 hover:text-gray-600 underline"
+            >
+              Exit Quiz
+            </button>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
@@ -319,10 +343,10 @@ export default function AiQuizModal({ category, roomCode, onComplete }: AiQuizMo
           {/* Skip link */}
           <div className="text-center">
             <button
-              onClick={onComplete}
+              onClick={handleSkip}
               className="text-sm text-gray-400 hover:text-gray-600 underline"
             >
-              Skip
+              {step < totalQuestions - 1 ? 'Skip this question' : 'Skip & Get Suggestions'}
             </button>
           </div>
         </div>
