@@ -218,6 +218,13 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
   };
 
   const handleRespin = async (winnerOptionId: number) => {
+    // Clear current result to unmount wheel completely
+    setSpinResult(null);
+    setIsSpinning(true);
+
+    // Small delay to ensure clean unmount
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     try {
       const response = await fetch(`/api/rooms/${roomCode}/respin`, {
         method: 'POST',
@@ -231,13 +238,16 @@ export default function RoomView({ roomCode, participantId }: RoomViewProps) {
 
       if (!response.ok) {
         setError(data.error || 'Failed to respin wheel');
+        setIsSpinning(false);
         return;
       }
 
-      // Update spin result with new winner
+      // Set new spin result to trigger fresh animation
       setSpinResult(data);
+      setIsSpinning(false);
     } catch {
       setError('Network error. Please try again.');
+      setIsSpinning(false);
     }
   };
 
